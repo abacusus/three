@@ -25,7 +25,7 @@ let ao = loader.load("./texture/ao.jpg");
 
 let covercolor = loader.load("./covertexture/covercolor.jpg");
 let coverroughness = loader.load("./covertexture/coverroughness.jpg");
-let covernormal = loader.load("./covertexture/covernormal.jpg");  
+let covernormal = loader.load("./covertexture/covernormal.png");  
 let cover_ao = loader.load("./covertexture/cover_ao.jpg");
 
 // cover1
