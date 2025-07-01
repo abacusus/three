@@ -1,7 +1,8 @@
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
-import * as THREE from "/node_modules/.vite/deps/three.js?v=4c184407";
-import { OrbitControls } from "/node_modules/.vite/deps/three_addons_controls_OrbitControls__js.js?v=4c184407";
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
 import GUI from 'lil-gui';
 
 const scene = new THREE.Scene();
