@@ -10,7 +10,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 
 //hdri lighting
 const rgbeloader = new RGBELoader();
-rgbeloader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/christmas_photo_studio_06_4k.hdr', function (texture) {
+rgbeloader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/christmas_photo_studio_06_2k.hdr', function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     scene.background = texture;
     scene.environment = texture;
