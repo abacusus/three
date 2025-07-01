@@ -1,3 +1,5 @@
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+
 import * as THREE from "/node_modules/.vite/deps/three.js?v=4c184407";
 import { OrbitControls } from "/node_modules/.vite/deps/three_addons_controls_OrbitControls__js.js?v=4c184407";
 import GUI from 'lil-gui';
@@ -5,24 +7,55 @@ import GUI from 'lil-gui';
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
+//hdri lighting
+const rgbeloader = new RGBELoader();
+rgbeloader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/christmas_photo_studio_06_4k.hdr', function (texture) {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = texture;
+    scene.environment = texture;
+});
+
+//texture loader
+let loader = new THREE.TextureLoader();
+let color = loader.load("./texture/color.jpg");
+let roughness = loader.load("./texture/roughness.jpg");
+let normal = loader.load("./texture/normal.png");
+let ao = loader.load("./texture/ao.jpg");
+
+let covercolor = loader.load("./covertexture/covercolor.jpg");
+let coverroughness = loader.load("./covertexture/coverroughness.jpg");
+let covernormal = loader.load("./covertexture/covernormal.jpg");  
+let cover_ao = loader.load("./covertexture/cover_ao.jpg");
+
 // cover1
 const geometry = new THREE.BoxGeometry(3, 0.1, 2);
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+const material = new THREE.MeshStandardMaterial({ map:covercolor,roughnessMap:coverroughness,normalMap:covernormal,aoMap:cover_ao, wireframe: false });
 const cube = new THREE.Mesh(geometry, material);
 
 // cover2
 const geometry2 = new THREE.BoxGeometry(3, 0.1, 2);
-const material2 = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
+const material2 = new THREE.MeshStandardMaterial({ map:covercolor,roughnessMap:coverroughness,normalMap:covernormal,aoMap:cover_ao, wireframe: false });
 const cube2 = new THREE.Mesh(geometry2, material2);
 
 // pages
-const pageGeometry = new THREE.PlaneGeometry(2.93, 1.93);
-const pageMaterial = new THREE.MeshBasicMaterial({ color: 0xe3d19b, side: THREE.DoubleSide, wireframe: false});
+const pageGeometry = new THREE.PlaneGeometry(2.93, 1.83);
+const pageMaterial = new THREE.MeshStandardMaterial({ map:color, roughnessMap:roughness,normalMap:normal,aoMap:ao,side: THREE.DoubleSide, wireframe: false});
 const page1 = new THREE.Mesh(pageGeometry, pageMaterial);
 const page2 = new THREE.Mesh(pageGeometry, pageMaterial); 
 const page3 = new THREE.Mesh(pageGeometry, pageMaterial);
 const page4 = new THREE.Mesh(pageGeometry, pageMaterial);
 
+//grouping
+
+const group = new THREE.Group();
+group.add(cube);
+group.add(cube2);
+group.add(page1);
+group.add(page2);
+group.add(page3);
+group.add(page4);
+
+scene.add(group);
 // joint
 const jointGeometry = new THREE.BoxGeometry(3, 0.2, 0.2 );
 const jointMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
@@ -63,7 +96,7 @@ scene.add(joint);
 //scene.add(hinge);
 scene.add(joint2);   */
 
-
+/*
 scene.add(cube);
 scene.add(cube2);
 scene.add(page1);
@@ -72,16 +105,87 @@ scene.add(page2);
 
 scene.add(page3);
 scene.add(page4);
+*/
 
 //camera position
-camera.position.y = -5;
-camera.position.z = 5;
-camera.position.x = 5;
+camera.position.y = 10;
+camera.position.z = -4;
+camera.position.x = 1;
 
 const canvas = document.querySelector('canvas');
 const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+const gui = new GUI();
+
+const materialSettings = {
+  roughness: 1,
+  aoIntensity: 1,
+  normalScale: 1,
+  color: "#ffffff",
+};
+
+pageMaterial.roughness = materialSettings.roughness;
+pageMaterial.aoMapIntensity = materialSettings.aoIntensity;
+pageMaterial.normalScale = new THREE.Vector2(materialSettings.normalScale, materialSettings.normalScale);
+pageMaterial.color = new THREE.Color(materialSettings.color);
+
+// GUI Controls
+const matFolder = gui.addFolder("Page Material Controls");
+matFolder.add(materialSettings, "roughness", 0, 1, 0.01).onChange((val) => {
+  pageMaterial.roughness = val;
+});
+
+matFolder.add(materialSettings, "aoIntensity", 0, 5, 0.01).onChange((val) => {
+  pageMaterial.aoMapIntensity = val;
+});
+
+matFolder.add(materialSettings, "normalScale", 0, 5, 0.01).onChange((val) => {
+  pageMaterial.normalScale.set(val, val);
+});
+
+matFolder.addColor(materialSettings, "color").onChange((val) => {
+  pageMaterial.color.set(val);
+});
+
+matFolder.open();
+
+
+const cubeControls = {
+  roughness: material.roughness,
+  aoIntensity: material.aoMapIntensity,
+  normalScale: 1,
+  color: '#ffffff'
+};
+const mat2Folder = gui.addFolder('Cover Material Controls');
+
+// Roughness
+mat2Folder.add(cubeControls, 'roughness', 0, 1).onChange(val => {
+  material.roughness = val;
+  material2.roughness = val;
+});
+
+// AO Intensity
+mat2Folder.add(cubeControls, 'aoIntensity', 0, 5).onChange(val => {
+  material.aoMapIntensity = val;
+  material2.aoMapIntensity = val;
+});
+
+// Normal Map Scale
+mat2Folder.add(cubeControls, 'normalScale', 0, 5).onChange(val => {
+  material.normalScale.set(val, val);
+  material2.normalScale.set(val, val);
+});
+
+// Base Color (tint)
+mat2Folder.addColor(cubeControls, 'color').onChange(val => {
+  material.color.set(val);
+  material2.color.set(val);
+});
+
+mat2Folder.open();
+
+/*
 // --- lil-gui setup for positioning ---
 const gui = new GUI();
 const cubeFolder = gui.addFolder('Green Cube');
@@ -120,6 +224,11 @@ page4Folder.add(page4.position, 'y', -10, 10, 0.01).name('Position Y');
 page4Folder.add(page4.position, 'z', -10, 10, 0.01).name('Position Z');
 page4Folder.open();
 
+
+*/
+
+
+
 /*
 
 const jointFolder = gui.addFolder('Joint');
@@ -151,23 +260,25 @@ window.addEventListener('resize', () => {
 //postioning and rotation
 //cube and cube2
 cube.position.set(0, 0, 0);
-cube2.position.set(0, 1.5, 0);
+cube2.position.set(0, 1.35, 0);
 
 cube.rotation.x = -Math.PI / 4; // Tilt 30 degrees along X axis
 cube2.rotation.x = Math.PI / 4; // Tilt 30 degrees along X axis
+//controls
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 
-// Position and rotation of the pages
-page1.position.set(0, 1.35, 0); 
-page2.position.set(0, 0, 0); 
-page3.position.set(0, 1, -0.3);
-page4.position.set(0, .4, -0.3); 
 
-page1.rotation.x = -Math.PI / 4; // Tilt 30 degrees along X axis
-page2.rotation.x = Math.PI / 4; // Tilt 30 degrees along X
+// Position and rotation of the pages
+page1.position.set(0, 1.234, -0.1); 
+page2.position.set(0, 0.115, -0.1); 
+page3.position.set(0, 0.95, -0.2);
+page4.position.set(0, 0.42, -0.2); 
+
+page1.rotation.x = -Math.PI / 3.5; // Tilt 30 degrees along X axis
+page2.rotation.x = Math.PI / 3.5; // Tilt 30 degrees along X
 page3.rotation.x = -Math.PI / 2.5; // Tilt 30 degrees along X axis
 page4.rotation.x = Math.PI / 2.5; // Tilt 30 degrees along X axis
 
@@ -182,12 +293,51 @@ joint2.position.set(0, 0, 0);
 hinge.position.set(-0.69, 1.4, 1.2);
 */
 
+// === Studio Lighting Setup ===
+/*
+// Key light (strong, from front right)
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+keyLight.position.set(5, 10, 7);
+scene.add(keyLight);
 
+// Fill light (softer, from front left)
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+fillLight.position.set(-5, 5, 7);
+scene.add(fillLight);
 
+// Back light (rim light, from behind)
+const backLight = new THREE.DirectionalLight(0xffffff, 0.7);
+backLight.position.set(0, 8, -10);
+scene.add(backLight);
+
+// Ambient light for soft shadows
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+scene.add(ambientLight);
+
+// === Helpers for lights ===
+const keyHelper = new THREE.DirectionalLightHelper(keyLight, 1, 0xffaa00);
+scene.add(keyHelper);
+
+const fillHelper = new THREE.DirectionalLightHelper(fillLight, 1, 0x00aaff);
+scene.add(fillHelper);
+
+const backHelper = new THREE.DirectionalLightHelper(backLight, 1, 0xffffff);
+scene.add(backHelper);
+
+// Optional: Add a grid and axes helper for studio feel
+const gridHelper = new THREE.GridHelper(10, 20);
+scene.add(gridHelper);
+
+const axesHelper = new THREE.AxesHelper(3);
+scene.add(axesHelper);
+*/
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
-
+  group.rotation.x += 0.001;
+  group.rotation.y += 0.001;
+  group.rotation.z += 0.001; // Rotate the entire group for a dynamic effect
+ // Rotate the mesh for a dynamic effect
   //animation
 //  const time = Date.now() * 0.001;
 //const angle = THREE.MathUtils.degToRad(15); // 15 degrees max
