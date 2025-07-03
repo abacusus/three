@@ -3,7 +3,7 @@ Three.js is a popular open-source JavaScript library that makes it easier to cre
 Three.js is a wrapper around WebGL, which is the low-level graphics API supported by modern browsers. WebGL can be complex and verbose. Three.js provides a simpler, more developer-friendly interface.
 
 This is a model of a book in  3D, applications using [Three.js](https://threejs.org/).
-LIVE DEMO :sahiltest.netlify.app
+LIVE DEMO :  https://sahiltest.netlify.app/
 
 ---
 
