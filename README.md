@@ -20,5 +20,5 @@ LIVE DEMO :  https://sahiltest.netlify.app/
 ### 📦 Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/threejs-starter.git
-cd threejs-starter
+git clone https://github.com/abacusus/threejs.git
+cd threejs
